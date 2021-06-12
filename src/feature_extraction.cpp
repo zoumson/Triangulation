@@ -8,15 +8,48 @@ using namespace cv;
 
 int main ( int argc, char** argv )
 {
+        String keys =
+        "{i image1 |<none>           | input image path}"                 
+        "{j image2 |<none>           | input image path}"                 
+        "{help h usage ?    |      | show help message}";      
+  
+    CommandLineParser parser(argc, argv, keys);
+    parser.about("Pose estimation 2D-2D");
+    if (parser.has("help")) 
+    {
+        parser.printMessage();
+        return 0;
+    }
+ 
+    String imagePath1 = parser.get<String>("image1");
+    String imagePath2 = parser.get<String>("image2");
+    // always after variable, required variable are checked here
+    if (!parser.check()) 
+    {
+        parser.printErrors();
+        return -1;
+    }
+    /*
+    if ( argc != 3 )
+    {
+        cout<<"usage: pose_estimation_2d2d img1 img2"<<endl;
+        return 1;
+    }
+    */
+    //-- 读取图像
+    Mat img_1 = imread ( imagePath1, IMREAD_COLOR );
+    Mat img_2 = imread ( imagePath2, IMREAD_COLOR );
+/*
     if ( argc != 3 )
     {
         cout<<"usage: feature_extraction img1 img2"<<endl;
         return 1;
     }
+
     //-- 读取图像
     Mat img_1 = imread ( argv[1], IMREAD_COLOR );
     Mat img_2 = imread ( argv[2], IMREAD_COLOR );
-
+*/
     //-- 初始化
     std::vector<KeyPoint> keypoints_1, keypoints_2;
     Mat descriptors_1, descriptors_2;

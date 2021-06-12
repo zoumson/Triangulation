@@ -34,6 +34,36 @@ void bundleAdjustment (
 
 int main ( int argc, char** argv )
 {
+         String keys =
+        "{i image1 |<none>           | input image1 path}"                 
+        "{j image2 |<none>           | input image2 path}"                
+        "{d depth |<none>           | input depth path}"                 
+        //"{e depth2 |<none>           | input depth2 path}"                 
+        "{help h usage ?    |      | show help message}";      
+  
+    CommandLineParser parser(argc, argv, keys);
+    parser.about("Pose estimation 2D-2D");
+    if (parser.has("help")) 
+    {
+        parser.printMessage();
+        return 0;
+    }
+ 
+    String imagePath1 = parser.get<String>("image1");
+    String imagePath2 = parser.get<String>("image2");
+    String imageDepth = parser.get<String>("depth");
+   // String imageDepth2 = parser.get<String>("depth2");
+    // always after variable, required variable are checked here
+    if (!parser.check()) 
+    {
+        parser.printErrors();
+        return -1;
+    }
+  
+    //-- 读取图像
+    Mat img_1 = imread ( imagePath1, IMREAD_COLOR );
+    Mat img_2 = imread ( imagePath2, IMREAD_COLOR );
+    /*
     if ( argc != 5 )
     {
         cout<<"usage: pose_estimation_3d2d img1 img2 depth1 depth2"<<endl;
@@ -42,6 +72,8 @@ int main ( int argc, char** argv )
     //-- 读取图像
     Mat img_1 = imread ( argv[1], IMREAD_COLOR );
     Mat img_2 = imread ( argv[2], IMREAD_COLOR );
+*/
+
 
     vector<KeyPoint> keypoints_1, keypoints_2;
     vector<DMatch> matches;
@@ -49,7 +81,8 @@ int main ( int argc, char** argv )
     cout<<"一共找到了"<<matches.size() <<"组匹配点"<<endl;
 
     // 建立3D点
-    Mat d1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    Mat d1 = imread ( imageDepth, IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+ //   Mat d1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
     Mat K = ( Mat_<double> ( 3,3 ) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1 );
     vector<Point3f> pts_3d;
     vector<Point2f> pts_2d;
@@ -69,7 +102,7 @@ int main ( int argc, char** argv )
     Mat r, t;
     solvePnP ( pts_3d, pts_2d, K, Mat(), r, t, false ); // 调用OpenCV 的 PnP 求解，可选择EPNP，DLS等方法
     Mat R;
-    cv::Rodrigues ( r, R ); // r为旋转向量形式，用Rodrigues公式转换为矩阵
+    Rodrigues ( r, R ); // r为旋转向量形式，用Rodrigues公式转换为矩阵
 
     cout<<"R="<<endl<<R<<endl;
     cout<<"t="<<endl<<t<<endl;

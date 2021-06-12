@@ -94,6 +94,36 @@ protected:
 
 int main ( int argc, char** argv )
 {
+    String keys =
+    "{i image1 |<none>           | input image1 path}"                 
+    "{j image2 |<none>           | input image2 path}"                
+    "{d depth1 |<none>           | input depth1 path}"                 
+    "{e depth2 |<none>           | input depth2 path}"                 
+    "{help h usage ?    |      | show help message}";      
+  
+    CommandLineParser parser(argc, argv, keys);
+    parser.about("Pose estimation 2D-2D");
+    if (parser.has("help")) 
+    {
+        parser.printMessage();
+        return 0;
+    }
+ 
+    String imagePath1 = parser.get<String>("image1");
+    String imagePath2 = parser.get<String>("image2");
+    String imageDepth1 = parser.get<String>("depth1");
+    String imageDepth2 = parser.get<String>("depth2");
+    // always after variable, required variable are checked here
+    if (!parser.check()) 
+    {
+        parser.printErrors();
+        return -1;
+    }
+  
+    //-- 读取图像
+    Mat img_1 = imread ( imagePath1, IMREAD_COLOR );
+    Mat img_2 = imread ( imagePath2, IMREAD_COLOR );
+    /*
     if ( argc != 5 )
     {
         cout<<"usage: pose_estimation_3d3d img1 img2 depth1 depth2"<<endl;
@@ -102,35 +132,54 @@ int main ( int argc, char** argv )
     //-- 读取图像
     Mat img_1 = imread ( argv[1], IMREAD_COLOR );
     Mat img_2 = imread ( argv[2], IMREAD_COLOR );
-
+*/
     vector<KeyPoint> keypoints_1, keypoints_2;
     vector<DMatch> matches;
     find_feature_matches ( img_1, img_2, keypoints_1, keypoints_2, matches );
     cout<<"一共找到了"<<matches.size() <<"组匹配点"<<endl;
-
+/*
     // 建立3D点
     Mat depth1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
     Mat depth2 = imread ( argv[4], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    
+*/
+cout << "1\n";
+    // 建立3D点
+    Mat depth1 = imread ( imageDepth1, IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    Mat depth2 = imread ( imageDepth2, IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    /*
+    // 建立3D点
+    Mat depth1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    Mat depth2 = imread ( argv[4], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
+    */
     Mat K = ( Mat_<double> ( 3,3 ) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1 );
     vector<Point3f> pts1, pts2;
 
     for ( DMatch m:matches )
+    //for ( auto m:matches )
     {
+        cout << "2\n";
+        
         ushort d1 = depth1.ptr<unsigned short> ( int ( keypoints_1[m.queryIdx].pt.y ) ) [ int ( keypoints_1[m.queryIdx].pt.x ) ];
         ushort d2 = depth2.ptr<unsigned short> ( int ( keypoints_2[m.trainIdx].pt.y ) ) [ int ( keypoints_2[m.trainIdx].pt.x ) ];
         if ( d1==0 || d2==0 )   // bad depth
             continue;
+        cout << "2\n";
         Point2d p1 = pixel2cam ( keypoints_1[m.queryIdx].pt, K );
+        cout << "3\n";
         Point2d p2 = pixel2cam ( keypoints_2[m.trainIdx].pt, K );
+        cout << "4\n";
         float dd1 = float ( d1 ) /5000.0;
         float dd2 = float ( d2 ) /5000.0;
         pts1.push_back ( Point3f ( p1.x*dd1, p1.y*dd1, dd1 ) );
         pts2.push_back ( Point3f ( p2.x*dd2, p2.y*dd2, dd2 ) );
+        
     }
-
+ 
     cout<<"3d-3d pairs: "<<pts1.size() <<endl;
     Mat R, t;
     pose_estimation_3d3d ( pts1, pts2, R, t );
+
     cout<<"ICP via SVD results: "<<endl;
     cout<<"R = "<<R<<endl;
     cout<<"t = "<<t<<endl;
@@ -262,7 +311,7 @@ void pose_estimation_3d3d (
     Eigen::Matrix3d R_ = U* ( V.transpose() );
     Eigen::Vector3d t_ = Eigen::Vector3d ( p1.x, p1.y, p1.z ) - R_ * Eigen::Vector3d ( p2.x, p2.y, p2.z );
 
-    // convert to cv::Mat
+    // convert to Mat
     R = ( Mat_<double> ( 3,3 ) <<
           R_ ( 0,0 ), R_ ( 0,1 ), R_ ( 0,2 ),
           R_ ( 1,0 ), R_ ( 1,1 ), R_ ( 1,2 ),
