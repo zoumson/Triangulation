@@ -29,28 +29,12 @@ int main ( int argc, char** argv )
         parser.printErrors();
         return -1;
     }
-    /*
-    if ( argc != 3 )
-    {
-        cout<<"usage: pose_estimation_2d2d img1 img2"<<endl;
-        return 1;
-    }
-    */
-    //-- 读取图像
+
+    //-- Read image
     Mat img_1 = imread ( imagePath1, IMREAD_COLOR );
     Mat img_2 = imread ( imagePath2, IMREAD_COLOR );
-/*
-    if ( argc != 3 )
-    {
-        cout<<"usage: feature_extraction img1 img2"<<endl;
-        return 1;
-    }
-
-    //-- 读取图像
-    Mat img_1 = imread ( argv[1], IMREAD_COLOR );
-    Mat img_2 = imread ( argv[2], IMREAD_COLOR );
-*/
-    //-- 初始化
+        
+    //-- Initialization
     std::vector<KeyPoint> keypoints_1, keypoints_2;
     Mat descriptors_1, descriptors_2;
     Ptr<FeatureDetector> detector = ORB::create();
@@ -59,27 +43,28 @@ int main ( int argc, char** argv )
     // Ptr<DescriptorExtractor> descriptor = DescriptorExtractor::create(descriptor_name);
     Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
 
-    //-- 第一步:检测 Oriented FAST 角点位置
+    //-- Step 1: Detect the position of the Oriented FAST corner point
     detector->detect ( img_1,keypoints_1 );
     detector->detect ( img_2,keypoints_2 );
 
-    //-- 第二步:根据角点位置计算 BRIEF 描述子
+    //-- Step 2: Calculate the BRIEF descriptor based on the position of the corner point
     descriptor->compute ( img_1, keypoints_1, descriptors_1 );
     descriptor->compute ( img_2, keypoints_2, descriptors_2 );
 
     Mat outimg1;
     drawKeypoints( img_1, keypoints_1, outimg1, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-    imshow("ORB特征点",outimg1);
+    imshow("Image 1: ORB feature points",outimg1);
 
-    //-- 第三步:对两幅图像中的BRIEF描述子进行匹配，使用 Hamming 距离
+    //-- Step 3: Match the BRIEF descriptors in the two images, using Hamming distance
     vector<DMatch> matches;
     //BFMatcher matcher ( NORM_HAMMING );
     matcher->match ( descriptors_1, descriptors_2, matches );
 
-    //-- 第四步:匹配点对筛选
+    //-- The fourth step: matching point pair screening
     double min_dist=10000, max_dist=0;
 
-    //找出所有匹配之间的最小距离和最大距离, 即是最相似的和最不相似的两组点之间的距离
+    //Find the minimum and maximum distances between all matches, that is, 
+    //the distance between the most similar and least similar two sets of points
     for ( int i = 0; i < descriptors_1.rows; i++ )
     {
         double dist = matches[i].distance;
@@ -87,14 +72,16 @@ int main ( int argc, char** argv )
         if ( dist > max_dist ) max_dist = dist;
     }
     
-    // 仅供娱乐的写法
+    // Another way to find max_dist and min_dist
     min_dist = min_element( matches.begin(), matches.end(), [](const DMatch& m1, const DMatch& m2) {return m1.distance<m2.distance;} )->distance;
     max_dist = max_element( matches.begin(), matches.end(), [](const DMatch& m1, const DMatch& m2) {return m1.distance<m2.distance;} )->distance;
 
     printf ( "-- Max dist : %f \n", max_dist );
     printf ( "-- Min dist : %f \n", min_dist );
 
-    //当描述子之间的距离大于两倍的最小距离时,即认为匹配有误.但有时候最小距离会非常小,设置一个经验值30作为下限.
+    //When the distance between the descriptors is greater than twice the minimum distance, 
+    //it is considered that the matching is wrong. But sometimes the minimum distance will be very small, 
+    //and an empirical value of 30 is set as the lower limit.
     std::vector< DMatch > good_matches;
     for ( int i = 0; i < descriptors_1.rows; i++ )
     {
@@ -104,13 +91,13 @@ int main ( int argc, char** argv )
         }
     }
 
-    //-- 第五步:绘制匹配结果
+    //-- Step 5: draw matching results
     Mat img_match;
     Mat img_goodmatch;
     drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
     drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
-    imshow ( "所有匹配点对", img_match );
-    imshow ( "优化后匹配点对", img_goodmatch );
+    imshow ( "All matching point pairs", img_match );
+    imshow ( "Match point pairs after optimization", img_goodmatch );
     waitKey(0);
 
     return 0;
