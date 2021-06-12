@@ -12,7 +12,7 @@
 [![Stack Overflow][stackoverflow-shield]][stackoverflow.com/users/11175375/adam]
 [![Leetcode][leetcode-shield]][eetcode.com/Hard_Code/]
 -->
-## Geometry Transformation on matrix
+## Triangulation 
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -54,7 +54,7 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-Apply geometry transformations on Eigen matrix
+Computer stereo vision and optical 3D measuring systems use this principle to determine the spatial dimensions and the geometry of an item.[2] Basically, the configuration consists of two sensors observing the item. One of the sensors is typically a digital camera device, and the other one can also be a camera or a light projector. The projection centers of the sensors and the considered point on the object's surface define a (spatial) triangle. Within this triangle, the distance between the sensors is the base b and must be known. By determining the angles between the projection rays of the sensors and the basis, the intersection point, and thus the 3D coordinate, is calculated from the triangular relations.
 
 <!--Built with -->
 ### Built With
@@ -63,9 +63,8 @@ Apply geometry transformations on Eigen matrix
 
 * [cmake](https://cmake.org/)
 * [gnu](https://www.gnu.org/)
-* [eigen](https://eigen.tuxfamily.org/)
-* [boost](https://boost.org/)
-* [sophus](https://github.com/strasdat/Sophus)
+* [g2o](https://github.com/RainerKuemmerle/g2o)
+* [opencv](https://opencv.org/)
 <br>
 
 ## File Structure
@@ -73,20 +72,36 @@ Apply geometry transformations on Eigen matrix
 ### Folders
 
 * [include/](include/): c++ header files.
+* [ressource/](ressource/): image files.
 * [src/](src/): c++ definitions.
 
 
 ### Entire Files Structure 
 
-
 ```
 .
 ├── CMakeLists.txt
+├── cmake_modules
+│   ├── FindCSparse.cmake
+│   └── FindG2O.cmake
 ├── include
-│   └── Log.h
+│   └── extra.h
 ├── README.md
+├── ressource
+│   └── image
+│       ├── 1_depth.png
+│       ├── 1.png
+│       ├── 2_depth.png
+│       └── 2.png
 └── src
-    └── useSophus.cpp
+    ├── extra.cpp
+    ├── feature_extraction.cpp
+    ├── pose_estimation_2d2d.cpp
+    ├── pose_estimation_3d2d.cpp
+    ├── pose_estimation_3d3d.cpp
+    └── triangulation.cpp
+
+
 
 ```
 
@@ -94,7 +109,7 @@ Apply geometry transformations on Eigen matrix
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is a sample code of how you may use  the Eigen library matrix and transformations.
+This is a sample code of how you may use triangulation to track motion of object on a map.
 To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
@@ -104,69 +119,53 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   sudo apt-get install cmake
   ```
- * eigen
- ```sh
- sudo apt-get install -y libeigen3-dev
- ```
- * boost
- ```sh
- sudo apt-get install libboost-all-dev
- ```
- * sophus
- ```sh
-git clone https://github.com/strasdat/Sophus.git
-cd Sophus/
-git checkout a621ff
 
-mkdir build
-cd build
-cmake ..
-make
-make install
- ```
- Change the following codes at line `/Sophus/sophus/so2.cpp:33:26` as commented
-```
-SO2::SO2()
-{
-  //unit_complex_.real() = 1.;
-  //unit_complex_.imag() = 0.;
-  unit_complex_.real(1.);
-  unit_complex_.imag(0.);
-}
-```
+
 ### Installation
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/zoumson/Sohpus.git
+   git clone https://github.com/zoumson/Triangulation.git
    ```
 2. Go to the project directory source
    ```sh
-   cd Sohpus
+   cd Triangulation
    ```
-3. Create empty directories `build`, `log`, and `bin`
+3. Create empty directories `build`, and `bin`
    ```sh
-   mkdir build &&  mkdir bin && mkdir log
+   mkdir build &&  mkdir bin 
    ```
-5. Generate the exectutable `useSophus` and move it to `bin`
+5. Generate the exectutables  and move them  to `bin`
    ```sh
    cd build && cmake .. && make -j4 && cd ..
    ```
 
 <!-- USAGE EXAMPLES -->
 ### Usage
-1. Run for matrix usage 
+1. Run for feature extraction 
    ```sh
-   ./bin/useSohpus
+   ./bin/feature_extraction
    ```
-2. Output
+2. Run for feature extraction 
    ```sh
-
+   ./bin/pose_estimation_2d2d
+   ```
+3. Run for feature extraction 
+   ```sh
+   ./bin/pose_estimation_3d2d
+   ```
+4. Run for feature extraction 
+   ```sh
+   ./bin/pose_estimation_3d3d
+   ```
+5. Run for feature extraction 
+   ```sh
+   ./bin/triangulation
    ```
 
-4. Back to the initial file structure configuration
+6. Back to the initial file structure configuration
    ```sh
-   rm -r bin build log
+   rm -r bin build 
    ```
 <!-- ROADMAP -->
 ## Roadmap
@@ -198,7 +197,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Adama Zouma - <!-- [@your_twitter](https://twitter.com/your_username) -->- stargue49@gmail.com
 
-Project Link: [https://github.com/zoumson/Sophus](https://github.com/zoumson/Sophus.git)
+Project Link: [https://github.com/zoumson/Triangulation](https://github.com/zoumson/Triangulation.git)
 
 
 
