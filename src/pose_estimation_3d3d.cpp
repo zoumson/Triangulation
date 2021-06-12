@@ -26,7 +26,7 @@ void find_feature_matches (
     std::vector<KeyPoint>& keypoints_2,
     std::vector< DMatch >& matches );
 
-// 像素坐标转相机归一化坐标
+// Pixel coordinates to camera normalized coordinates
 Point2d pixel2cam ( const Point2d& p, const Mat& K );
 
 void pose_estimation_3d3d (
@@ -120,43 +120,25 @@ int main ( int argc, char** argv )
         return -1;
     }
   
-    //-- 读取图像
+    //-- Read image
     Mat img_1 = imread ( imagePath1, IMREAD_COLOR );
     Mat img_2 = imread ( imagePath2, IMREAD_COLOR );
-    /*
-    if ( argc != 5 )
-    {
-        cout<<"usage: pose_estimation_3d3d img1 img2 depth1 depth2"<<endl;
-        return 1;
-    }
-    //-- 读取图像
-    Mat img_1 = imread ( argv[1], IMREAD_COLOR );
-    Mat img_2 = imread ( argv[2], IMREAD_COLOR );
-*/
+
+
     vector<KeyPoint> keypoints_1, keypoints_2;
     vector<DMatch> matches;
     find_feature_matches ( img_1, img_2, keypoints_1, keypoints_2, matches );
-    cout<<"一共找到了"<<matches.size() <<"组匹配点"<<endl;
-/*
-    // 建立3D点
-    Mat depth1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    Mat depth2 = imread ( argv[4], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    
-*/
-cout << "1\n";
-    // 建立3D点
-    Mat depth1 = imread ( imageDepth1, IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    Mat depth2 = imread ( imageDepth2, IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    /*
-    // 建立3D点
-    Mat depth1 = imread ( argv[3], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    Mat depth2 = imread ( argv[4], IMREAD_UNCHANGED );       // 深度图为16位无符号数，单通道图像
-    */
+    cout<<"total of good matches: "<<matches.size() <<"\n";
+
+    // Create 3D points
+    // The depth image is a 16-bit unsigned number, single-channel image
+    Mat depth1 = imread ( imageDepth1, IMREAD_UNCHANGED );      
+    Mat depth2 = imread ( imageDepth2, IMREAD_UNCHANGED );      
+
     Mat K = ( Mat_<double> ( 3,3 ) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1 );
     vector<Point3f> pts1, pts2;
 
     for ( DMatch m:matches )
-    //for ( auto m:matches )
     {
         cout << "2\n";
         
@@ -207,32 +189,33 @@ void find_feature_matches ( const Mat& img_1, const Mat& img_2,
                             std::vector<KeyPoint>& keypoints_2,
                             std::vector< DMatch >& matches )
 {
-    //-- 初始化
+    //-- Initialization
     Mat descriptors_1, descriptors_2;
-    // used in OpenCV3
+    // used in OpenCV4
     Ptr<FeatureDetector> detector = ORB::create();
     Ptr<DescriptorExtractor> descriptor = ORB::create();
     // use this if you are in OpenCV2
     // Ptr<FeatureDetector> detector = FeatureDetector::create ( "ORB" );
     // Ptr<DescriptorExtractor> descriptor = DescriptorExtractor::create ( "ORB" );
     Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create("BruteForce-Hamming");
-    //-- 第一步:检测 Oriented FAST 角点位置
+    //-- Step 1: Detect the position of the Oriented FAST corner point
     detector->detect ( img_1,keypoints_1 );
     detector->detect ( img_2,keypoints_2 );
 
-    //-- 第二步:根据角点位置计算 BRIEF 描述子
+    //-- Step 2: Calculate the BRIEF descriptor based on the position of the corner point
     descriptor->compute ( img_1, keypoints_1, descriptors_1 );
     descriptor->compute ( img_2, keypoints_2, descriptors_2 );
 
-    //-- 第三步:对两幅图像中的BRIEF描述子进行匹配，使用 Hamming 距离
+    //-- Step 3: Match the BRIEF descriptors in the two images, using Hamming distance
     vector<DMatch> match;
    // BFMatcher matcher ( NORM_HAMMING );
     matcher->match ( descriptors_1, descriptors_2, match );
 
-    //-- 第四步:匹配点对筛选
+    //-- The fourth step: matching point pair screening
     double min_dist=10000, max_dist=0;
 
-    //找出所有匹配之间的最小距离和最大距离, 即是最相似的和最不相似的两组点之间的距离
+    //Find the minimum and maximum distances between all matches, 
+    //that is, the distance between the most similar and least similar two sets of points
     for ( int i = 0; i < descriptors_1.rows; i++ )
     {
         double dist = match[i].distance;
@@ -243,8 +226,10 @@ void find_feature_matches ( const Mat& img_1, const Mat& img_2,
     printf ( "-- Max dist : %f \n", max_dist );
     printf ( "-- Min dist : %f \n", min_dist );
 
-    //当描述子之间的距离大于两倍的最小距离时,即认为匹配有误.但有时候最小距离会非常小,设置一个经验值30作为下限.
-    for ( int i = 0; i < descriptors_1.rows; i++ )
+    //When the distance between the descriptors is greater than twice the minimum distance, 
+    //it is considered that the matching is wrong. 
+    //But sometimes the minimum distance will be very small, 
+    //and an empirical value of 30 is set as the lower limit.
     {
         if ( match[i].distance <= max ( 2*min_dist, 30.0 ) )
         {
@@ -325,13 +310,8 @@ void bundleAdjustment (
     const vector< Point3f >& pts2,
     Mat& R, Mat& t )
 {
-    // 初始化g2o
-    /*
-    typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block;  // pose维度为 6, landmark 维度为 3
-    Block::LinearSolverType* linearSolver = new g2o::LinearSolverEigen<Block::PoseMatrixType>(); // 线性方程求解器
-    Block* solver_ptr = new Block( linearSolver );      // 矩阵块求解器
-    g2o::OptimizationAlgorithmGaussNewton* solver = new g2o::OptimizationAlgorithmGaussNewton( solver_ptr );
-    */
+
+    // Use g2o to solve 
      typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block;  
     //zouma
     // Linear equation solver
