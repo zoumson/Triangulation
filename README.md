@@ -144,23 +144,23 @@ This is an example of how to list things you need to use the software and how to
 ### Usage
 1. Run for feature extraction 
    ```sh
-   ./bin/feature_extraction
+   ./bin/feature_extraction -i=./ressource/image/1.png -j=./ressource/image/2.png
    ```
-2. Run for feature extraction 
+2. Run for pose estimation 2D2D 
    ```sh
-   ./bin/pose_estimation_2d2d
+   ./bin/pose_estimation_2d2d -i=./ressource/image/1.png -j=./ressource/image/2.png
    ```
-3. Run for feature extraction 
+3. Run for pose estimation 3D2D 
    ```sh
-   ./bin/pose_estimation_3d2d
+   ./bin/pose_estimation_3d2d -i=./ressource/image/1.png -j=./ressource/image/2.png -d=./ressource/image/1_depth.png
    ```
-4. Run for feature extraction 
+4. Run for pose estimation 3D3D  
    ```sh
-   ./bin/pose_estimation_3d3d
+   ./bin/pose_estimation_3d3d -i=./ressource/image/1.png -j=./ressource/image/2.png -d=./ressource/image/1_depth.png -e=./ressource/image/2_depth.png 
    ```
-5. Run for feature extraction 
+5. Run for triangulation
    ```sh
-   ./bin/triangulation
+   ./bin/triangulation -i=./ressource/image/1.png -j=./ressource/image/2.png
    ```
 
 6. Back to the initial file structure configuration
