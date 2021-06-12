@@ -230,6 +230,7 @@ void find_feature_matches ( const Mat& img_1, const Mat& img_2,
     //it is considered that the matching is wrong. 
     //But sometimes the minimum distance will be very small, 
     //and an empirical value of 30 is set as the lower limit.
+    for ( int i = 0; i < descriptors_1.rows; i++ )
     {
         if ( match[i].distance <= max ( 2*min_dist, 30.0 ) )
         {

@@ -176,7 +176,7 @@ void pose_estimation_2d2d (
     }
 
     //-- Calculate the fundamental matrix
-    cv::Mat fundamental_matrix;Calculate the fundamental matrix
+    cv::Mat fundamental_matrix;
     fundamental_matrix = cv::findFundamentalMat ( points1, points2, cv::FM_8POINT );
     cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
     //-- Calculate the essential matrix
