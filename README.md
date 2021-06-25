@@ -119,7 +119,14 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   sudo apt-get install cmake
   ```
-
+ * opencv4
+ ```sh
+ sudo su
+ ```
+ ```sh
+git clone https://github.com/zoumson/OpencvInstall.git     \
+&& cd OpencvInstall && chmod +x install.sh && ./install.sh
+ ```
 
 ### Installation
 
